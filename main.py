@@ -30,7 +30,7 @@ file_parser = parser.add_argument("input", help="Input File")
 output_parser = parser.add_argument("output", help="Output Directory")
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG")
 png_parser = parser.add_argument("--png", "-p", help="PNG Output", type=bool, default=False)
-height_parser = parser.add_argument("--height", "-h", help="Height in Pixels", type=int, default=1080)
+height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
 width_parser = parser.add_argument("--width", "-w", help="Width in Pixels", type=int, default=1920)
 
 args = parser.parse_args()
