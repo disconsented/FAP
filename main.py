@@ -27,7 +27,7 @@ import pygal
 
 parser = argparse.ArgumentParser(description="Graphing and Analytics tool for OCAT frametime CSV's")
 file_parser = parser.add_argument("input", help="Input File")
-output_parser = parser.add_argument("--output", "-o", help="Output Directory")
+output_parser = parser.add_argument("--output", "-o", help="Output Directory", default="")
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 png_parser = parser.add_argument("--png", "-p", help="PNG Output", type=bool, default=False)
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
@@ -62,11 +62,16 @@ chart.show_legend = False
 chart.show_dots = False
 chart.range = [0, args.range]
 print("Rendering")
-output_file = os.path.splitext(args.input)[0] + ".svg"
-chart.render_to_file(output_file)
 
-if args.png:
-    chart.render_to_png(os.path.splitext(args.input)[0] + ".png")
+if args.output != "":
+    os.makedirs(args.output)
+    chart.render_to_file(args.output + os.path.basename(os.path.splitext(args.input)[0] + ".svg"))
+    if args.png:
+        chart.render_to_png(args.output + os.path.basename(os.path.splitext(args.input)[0] + ".png"))
+else:
+    chart.render_to_file(os.path.splitext(args.input)[0] + ".svg")
+    if args.png:
+        chart.render_to_png(os.path.splitext(args.input)[0] + ".svg")
 
 time_between = time.time() - start
 print("Completed in {}s".format(time_between))
