@@ -1,0 +1,4 @@
+pygal>=2.3.1
+lxml>=3.7.3
+tinycss>=0.4
+cssselect>=1.0.1
