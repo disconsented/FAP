@@ -27,11 +27,12 @@ import pygal
 
 parser = argparse.ArgumentParser(description="Graphing and Analytics tool for OCAT frametime CSV's")
 file_parser = parser.add_argument("input", help="Input File")
-output_parser = parser.add_argument("output", help="Output Directory")
+output_parser = parser.add_argument("--output", "-o", help="Output Directory")
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 png_parser = parser.add_argument("--png", "-p", help="PNG Output", type=bool, default=False)
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
 width_parser = parser.add_argument("--width", "-w", help="Width in Pixels", type=int, default=1920)
+range_parser = parser.add_argument("--range", "-r", help="Y Axis maximum value", type=int, default=30)
 
 args = parser.parse_args()
 
@@ -59,7 +60,7 @@ chart.width = args.width
 chart.height = args.height
 chart.show_legend = False
 chart.show_dots = False
-chart.range = [0, 30]
+chart.range = [0, args.range]
 print("Rendering")
 output_file = os.path.splitext(args.input)[0] + ".svg"
 chart.render_to_file(output_file)
