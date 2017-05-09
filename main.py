@@ -60,7 +60,7 @@ chart.show_legend = False
 chart.show_dots = False
 chart.range = [0, 30]
 print("Rendering")
-output_file = os.path.splitext(args.input)[0] + ".csv"
+output_file = os.path.splitext(args.input)[0] + ".svg"
 chart.render_to_file(output_file)
 
 if args.png:
