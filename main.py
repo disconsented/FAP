@@ -28,7 +28,7 @@ import pygal
 parser = argparse.ArgumentParser(description="Graphing and Analytics tool for OCAT frametime CSV's")
 file_parser = parser.add_argument("input", help="Input File")
 output_parser = parser.add_argument("output", help="Output Directory")
-stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG")
+stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 png_parser = parser.add_argument("--png", "-p", help="PNG Output", type=bool, default=False)
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
 width_parser = parser.add_argument("--width", "-w", help="Width in Pixels", type=int, default=1920)
@@ -50,7 +50,8 @@ csv_file.close()
 print("Loaded file in " + str(time.time() - start) + "s \r\n Setting up")
 
 config = pygal.Config()
-config.css.append('file://' + args.stylesheet)
+if args.stylesheet != "":
+    config.css.append('file://' + args.stylesheet)
 chart = pygal.Line(config)
 
 chart.add("", time_series)  # Legend isn't being rendered so the name doesnt matter
