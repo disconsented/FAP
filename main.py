@@ -31,7 +31,12 @@ output_parser = parser.add_argument("--output", "-o", help="Output Directory", d
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
 width_parser = parser.add_argument("--width", "-w", help="Width in Pixels", type=int, default=1920)
-range_parser = parser.add_argument("--range", "-r", help="Y Axis maximum value", type=int, default=30)
+range_parser = parser.add_argument("--range", "-r", help="Y Axis maximum value", type=float, default=30)
+range_min_parser = parser.add_argument("--minRange", "-m", help="Y Axis minimum value", type=float, default=0)
+delimit_parser = parser.add_argument("--delimiter", "-d", help="Delimiter character", type=str, default=",")
+column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=int, default=10)
+multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier value (translate ns to ms)", type=int,
+                                        default=0)
 
 args = parser.parse_args()
 
@@ -44,10 +49,10 @@ for file in os.listdir(args.input):
         time_series = []
 
         with open(filename, newline='') as csv_file:
-            reader = csv.reader(csv_file, delimiter=',')
+            reader = csv.reader(csv_file, delimiter=args.delimiter)
             for row in reader:
                 try:
-                    time_series.append(float(row[10]))
+                    time_series.append(float(row[args.column]) * args.multiplier)
                 except ValueError as e:
                     pass
         csv_file.close()
@@ -64,7 +69,7 @@ for file in os.listdir(args.input):
         chart.height = args.height
         chart.show_legend = False
         chart.show_dots = False
-        chart.range = [0, args.range]
+        chart.range = [args.minRange, args.range]
         print("Rendering")
 
         if args.output != "":
