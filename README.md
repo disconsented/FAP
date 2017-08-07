@@ -1,17 +1,25 @@
-# FAP
-Frametime Analytics Package
+# OFA
+Open Frametime Analytics
 
 Written in python3
 
 run "pip3 install -r requirements.txt" to install dependencies.
 
-Intended for graphing and analyising frametime data. Current just graphs.
+Intended for graphing and analysing frametime data. Current just graphs.
 
-Intended metrics:
-50%, 95%, 99%, 99.9% frame times (text output with graphs avaliable for batches)
-Standard Devation
-Geometric Mean
-IQR
-% Frames below average
+Features singular benchmarks and batch processing.
 
-ANOVA (Batch Processing)
+Intended features:
+
+|Name | Singular | batch|
+|-|-|-|
+|Median|y|y|
+|95,99,99.9 % quartiles|y|y|
+|Standard Deviation|y|y|
+|Geometric Means|y|y|y|
+|Smoothed Data|y|y|y|
+|Outlier Cleaning (IQR)|y|y|
+|Number of Frames below X|y|y|
+|ANOVA|n|y|
+|Frame Distribution Graph|n|y|
+|Students T Test|n|y|
