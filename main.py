@@ -36,7 +36,7 @@ range_min_parser = parser.add_argument("--minRange", "-m", help="Y Axis minimum 
 delimit_parser = parser.add_argument("--delimiter", "-d", help="Delimiter character", type=str, default=",")
 column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=int, default=10)
 multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier value (translate ns to ms)", type=int,
-                                        default=0)
+                                        default=1)
 
 args = parser.parse_args()
 
@@ -47,12 +47,16 @@ for file in os.listdir(args.input):
         filename = args.input + file
 
         time_series = []
+        x_axis = []
+        total_time = 0
 
         with open(filename, newline='') as csv_file:
             reader = csv.reader(csv_file, delimiter=args.delimiter)
             for row in reader:
                 try:
                     time_series.append(float(row[args.column]) * args.multiplier)
+                    total_time += float(row[args.column])
+                    x_axis.append(float(row[9]))
                 except ValueError as e:
                     pass
         csv_file.close()
@@ -62,7 +66,15 @@ for file in os.listdir(args.input):
         config = pygal.Config()
         if args.stylesheet != "":
             config.css.append('file://' + args.stylesheet)
+        print(int(len(time_series) / 100))
+        print(int(total_time/100))
+        print(int(len(time_series)))
+        config.x_labels_major_every = int(len(time_series) / 100)
+        config.show_minor_x_labels = False
+        config.x_label_rotation = 45
+
         chart = pygal.Line(config)
+        chart.x_labels = x_axis
 
         chart.add("", time_series)  # Legend isn't being rendered so the name doesnt matter TODO: Change this
         chart.width = args.width
