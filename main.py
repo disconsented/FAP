@@ -19,14 +19,13 @@
 # SOFTWARE.
 
 import argparse
-import csv
+import os
 import time
 
-import os
-import pygal
+from CSVData import CSVData
 
 parser = argparse.ArgumentParser(description="Graphing and Analytics tool for OCAT frametime CSV's")
-file_parser = parser.add_argument("input", help="Input Dir")
+file_parser = parser.add_argument("input", help="Input Dir/File")
 output_parser = parser.add_argument("--output", "-o", help="Output Directory", default="")
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
@@ -37,65 +36,30 @@ delimit_parser = parser.add_argument("--delimiter", "-d", help="Delimiter charac
 column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=int, default=10)
 multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier value (translate ns to ms)", type=int,
                                         default=1)
+legend_parser = parser.add_argument("--legend", "-l", help="Chart legend", type=str, default="")
 
 args = parser.parse_args()
 
 start = time.time()
 
-for file in os.listdir(args.input):
-    if ".csv" in file:
-        filename = args.input + file
+files_to_process = []  # List of files to process
 
-        time_series = []
-        x_axis = []
-        total_time = 0
+if os.path.isdir(args.input):
+    for file in os.listdir(args.input):
+        if ".csv" in file:
+            files_to_process.append(args.input + file)
+else:
+    if ".csv" in args.input:
+        files_to_process.append(args.input)
+    else:
+        print("Expected .csv")
 
-        with open(filename, newline='') as csv_file:
-            reader = csv.reader(csv_file, delimiter=args.delimiter)
-            for row in reader:
-                try:
-                    time_series.append(float(row[args.column]) * args.multiplier)
-                    total_time += float(row[args.column])
-                    x_axis.append(float(row[9]))
-                except ValueError as e:
-                    pass
-        csv_file.close()
+data_blocks = []
 
-        print("Loaded file in " + str(time.time() - start) + "s \r\n Setting up")
+for file in files_to_process:
+    data = CSVData(file, args)
+    data.load()
+    data.render()
+    data_blocks.append(data)
 
-        config = pygal.Config()
-        if args.stylesheet != "":
-            config.css.append('file://' + args.stylesheet)
-        print(int(len(time_series) / 100))
-        print(int(total_time/100))
-        print(int(len(time_series)))
-        config.x_labels_major_every = int(len(time_series) / 100)
-        config.show_minor_x_labels = False
-        config.x_label_rotation = 45
-
-        chart = pygal.Line(config)
-        chart.x_labels = x_axis
-
-        chart.add("", time_series)  # Legend isn't being rendered so the name doesnt matter TODO: Change this
-        chart.width = args.width
-        chart.height = args.height
-        chart.show_legend = False
-        chart.show_dots = False
-        chart.range = [args.minRange, args.range]
-        print("Rendering")
-
-        if args.output != "":
-            try:
-                os.makedirs(args.output)
-            except FileExistsError:
-                print("Output dir already exists")
-            chart.render_to_file(args.output + os.path.basename(os.path.splitext(filename)[0] + ".svg"))
-            # if args.png:
-            #     chart.render_to_png(args.output + os.path.basename(os.path.splitext(filename)[0] + ".png"))
-        else:
-            chart.render_to_file(os.path.splitext(filename)[0] + ".svg")
-            # if args.png:
-            #     chart.render_to_png(os.path.splitext(filename)[0] + ".svg")
-
-time_between = time.time() - start
-print("Completed in {}s".format(time_between))
+print("Done in " + str(round(time.time() - start, 2)) + "s")
