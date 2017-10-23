@@ -44,7 +44,7 @@ class CSVData:
         chart.show_legend = False
         chart.show_dots = False
         chart.range = [self.args.minRange, self.args.range]
-        print("Rendering")
+        print("Rendering from " + self.file_name)
 
         if self.args.output != "":
             try:
