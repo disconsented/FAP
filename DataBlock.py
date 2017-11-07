@@ -76,11 +76,14 @@ class DataBlock:
         a = numpy.log(self.time_series)
         return numpy.exp(a.sum()/len(a))
 
-    def quartiles(self):
-        quartiles = []
-        for quartile in [50, 95, 99, 99.9]:
-            quartiles.append(numpy.percentile(self.time_series, quartile))
-        return quartiles
+    def percentiles(self):
+        percentiles = []
+        for percentile in [50, 95, 99, 99.9]:
+            percentiles.append(numpy.percentile(self.time_series, percentile))
+        return percentiles
+
+    def percentile(self, percentile):
+        return numpy.percentile(self.time_series, percentile)
 
     def min(self):
         return min(self.time_series)
