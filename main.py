@@ -22,21 +22,31 @@ import argparse
 import os
 import time
 
-from CSVData import CSVData
+from DataBlock import DataBlock
+from collections import defaultdict
+import pygal
 
 parser = argparse.ArgumentParser(description="Graphing and Analytics tool for OCAT frametime CSV's")
 file_parser = parser.add_argument("input", help="Input Dir/File")
 output_parser = parser.add_argument("--output", "-o", help="Output Directory", default="")
+
+# graph args
 stylesheet_parser = parser.add_argument("--stylesheet", "-s", help="Stylesheet for formatting the SVG", default="")
 height_parser = parser.add_argument("--height", "-v", help="Height in Pixels", type=int, default=1080)
 width_parser = parser.add_argument("--width", "-w", help="Width in Pixels", type=int, default=1920)
 range_parser = parser.add_argument("--range", "-r", help="Y Axis maximum value", type=float, default=30)
 range_min_parser = parser.add_argument("--minRange", "-m", help="Y Axis minimum value", type=float, default=0)
 delimit_parser = parser.add_argument("--delimiter", "-d", help="Delimiter character", type=str, default=",")
-column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=int, default=10)
+column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=str, default="MsBetweenPresents")
 multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier value (translate ns to ms)", type=int,
                                         default=1)
 legend_parser = parser.add_argument("--legend", "-l", help="Chart legend", type=str, default="")
+
+# statistical args
+median_parser = parser.add_argument("--stat-median", help="Median", type=bool, default=True)
+quartile_parser = parser.add_argument("--stat-quartile", help="95,99,99.9% quartiles", type=bool, default=True)
+std_parser = parser.add_argument("--stat-std", help="Standard Deviation", type=bool, default=True)
+mean_parser = parser.add_argument("--stat-mean", help="Geometric Mean", type=bool, default=True)
 
 args = parser.parse_args()
 
@@ -45,21 +55,59 @@ start = time.time()
 files_to_process = []  # List of files to process
 
 if os.path.isdir(args.input):
-    for file in os.listdir(args.input):
-        if ".csv" in file:
-            files_to_process.append(args.input + file)
+    for root, dirs, files in os.walk(args.input):
+        for file in files:
+            if file.endswith(".csv"):
+                files_to_process.append(root + file)
 else:
-    if ".csv" in args.input:
-        files_to_process.append(args.input)
-    else:
-        print("Expected .csv")
+    with open(args.input) as file:
+        if file.name.endswith(".csv"):
+            files_to_process.append(args.input)
+        else:
+            print("Expected .csv")
 
 data_blocks = []
-
+stats = defaultdict(list)
 for file in files_to_process:
-    data = CSVData(file, args)
+    data = DataBlock(file, args)
     data.load()
     data.render()
+    # data.stats()
+    stats["Geometric Mean"].append(data.geo_mean_overflow())
+    # stats["quartiles"].append(data.quartiles())
+    stats["Minimum"].append(data.min())
+    stats["Maximum"].append(data.max())
+    # stats["total"].append(data.total())
+    stats["Standard Deviation"].append(data.std())
+    stats["Variance"].append(data.variance())
+    stats["Frames Below"].append(data.count_below(16))
+    # print("Geometric Mean: {}".format(data.geo_mean_overflow()))
+    # print("Quartiles: {}".format(data.quartiles()))
+    # print("Min: {}".format(data.min()))
+    # print("Max: {}".format(data.max()))
+    # print("Total: {}".format(data.total()))
+    # print("Standard Deviation: {}".format(data.std()))
+    # print("Variance: {}".format(data.variance()))
+    # print("Count below 16ms: {}".format(data.count_below(16)))
     data_blocks.append(data)
+
+config = pygal.Config()
+if args.stylesheet != "":
+    config.css.append('file://' + args.stylesheet)
+
+chart = pygal.HorizontalBar(config)
+x_labels = []
+for x in data_blocks:
+    x_labels.append(x.name())
+
+for k in stats.keys():
+    chart.add(k, stats[k])
+chart.width = args.width
+chart.height = args.height
+chart.x_labels = x_labels
+
+chart.render_to_file(args.output + "stats.svg")
+chart.render_to_png(args.output + "stats.png")
+
 
 print("Done in " + str(round(time.time() - start, 2)) + "s")
