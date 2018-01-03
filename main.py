@@ -43,10 +43,15 @@ multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier v
 legend_parser = parser.add_argument("--legend", "-l", help="Chart legend", type=str, default="")
 
 # statistical args
-median_parser = parser.add_argument("--stat-median", help="Median", type=bool, default=True)
-quartile_parser = parser.add_argument("--stat-quartile", help="95,99,99.9% quartiles", type=bool, default=True)
-std_parser = parser.add_argument("--stat-std", help="Standard Deviation", type=bool, default=True)
-mean_parser = parser.add_argument("--stat-mean", help="Geometric Mean", type=bool, default=True)
+median_enabled_parser = parser.add_argument("--stat-median", help="Median", type=bool, default=True)
+geo_mean_enabled_parser = parser.add_argument("--stat-geo-mean", help="Geometric Mean", type=bool, default=True)
+min_enabled_parser = parser.add_argument("--stat-min", help="Minimum", type=bool, default=True)
+std_enabled_parser = parser.add_argument("--stat-std", help="Standard Deviation", type=bool, default=True)
+count_below_enabled_parser = parser.add_argument("--stat-below", help="Count Below", type=int, default=16)
+p95_enabled_parser = parser.add_argument("--stat-p95", help="95%", type=bool, default=True)
+p99_enabled_parser = parser.add_argument("--stat-p99", help="99%", type=bool, default=True)
+p999_enabled_parser = parser.add_argument("--stat-p999", help="99.9%", type=bool, default=True)
+
 
 args = parser.parse_args()
 
@@ -67,47 +72,40 @@ else:
             print("Expected .csv")
 
 data_blocks = []
-stats = defaultdict(list)
+
 for file in files_to_process:
     data = DataBlock(file, args)
     data.load()
-    data.render()
-    # data.stats()
-    stats["Geometric Mean"].append(data.geo_mean_overflow())
-    # stats["quartiles"].append(data.quartiles())
-    stats["Minimum"].append(data.min())
-    stats["Maximum"].append(data.max())
-    # stats["total"].append(data.total())
-    stats["Standard Deviation"].append(data.std())
-    stats["Variance"].append(data.variance())
-    stats["Frames Below"].append(data.count_below(16))
-    # print("Geometric Mean: {}".format(data.geo_mean_overflow()))
-    # print("Quartiles: {}".format(data.quartiles()))
-    # print("Min: {}".format(data.min()))
-    # print("Max: {}".format(data.max()))
-    # print("Total: {}".format(data.total()))
-    # print("Standard Deviation: {}".format(data.std()))
-    # print("Variance: {}".format(data.variance()))
-    # print("Count below 16ms: {}".format(data.count_below(16)))
+    print(data.percentile(50))
+    # data.render()
     data_blocks.append(data)
+    print("/")
+    data = None
 
 config = pygal.Config()
 if args.stylesheet != "":
     config.css.append('file://' + args.stylesheet)
 
-chart = pygal.HorizontalBar(config)
-x_labels = []
+stats_chart = pygal.HorizontalBar(config)
+print("#")
+for each in data_blocks:
+    print(each.percentile(50))
+
 for x in data_blocks:
-    x_labels.append(x.name())
+    stats = x.stats()
+    print(x.name())
+    print(x.percentile(50))
+    stats_chart.x_labels = stats[1]
+    stats_chart.add(x.name(), stats[0])
 
-for k in stats.keys():
-    chart.add(k, stats[k])
-chart.width = args.width
-chart.height = args.height
-chart.x_labels = x_labels
+for each in data_blocks:
+    print(each.percentile(50))
 
-chart.render_to_file(args.output + "stats.svg")
-chart.render_to_png(args.output + "stats.png")
+stats_chart.width = args.width
+stats_chart.height = args.height
+
+stats_chart.render_to_file(args.output + "stats.svg")
+stats_chart.render_to_png(args.output + "stats.png")
 
 
 print("Done in " + str(round(time.time() - start, 2)) + "s")

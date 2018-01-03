@@ -91,3 +91,7 @@ ENV/
 /data/
 /.idea/
 /FAP.iml
+
+*.csv
+*.svg
+*.png
