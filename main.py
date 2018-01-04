@@ -76,30 +76,18 @@ data_blocks = []
 for file in files_to_process:
     data = DataBlock(file, args)
     data.load()
-    print(data.percentile(50))
-    # data.render()
+    data.render()
     data_blocks.append(data)
-    print("/")
-    data = None
-
 config = pygal.Config()
 if args.stylesheet != "":
     config.css.append('file://' + args.stylesheet)
 
 stats_chart = pygal.HorizontalBar(config)
-print("#")
-for each in data_blocks:
-    print(each.percentile(50))
 
 for x in data_blocks:
     stats = x.stats()
-    print(x.name())
-    print(x.percentile(50))
     stats_chart.x_labels = stats[1]
     stats_chart.add(x.name(), stats[0])
-
-for each in data_blocks:
-    print(each.percentile(50))
 
 stats_chart.width = args.width
 stats_chart.height = args.height

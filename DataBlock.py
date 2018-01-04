@@ -7,17 +7,15 @@ import numpy
 
 
 class DataBlock:
-    __x_axis = []
-    __time_series = []
-    __file_name = ""
-    __total_time = 0
-    __args = None
-    __column_ms_between = 0
-    __column_total_time = 0
 
     def __init__(self, file_path, args):
         self.__args = args
         self.__file_name = file_path
+        self.__x_axis = []
+        self.__time_series = []
+        self.__total_time = 0
+        self.__column_ms_between = 0
+        self.__column_total_time = 0
 
     def name(self):
         split = self.__file_name.split("/")
