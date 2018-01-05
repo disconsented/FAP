@@ -32,7 +32,7 @@ class DataBlock:
                     try:
                         self.__time_series.append(float(row[self.__column_ms_between]) * self.__args.multiplier)
                         self.__total_time += float(row[self.__column_ms_between])
-                        self.__x_axis.append(float(row[self.__column_total_time]))
+                        self.__x_axis.append(round(float(row[self.__column_total_time]), 2))
                     except ValueError as e:
                         pass
         csv_file.close()
@@ -44,11 +44,24 @@ class DataBlock:
         config.x_labels_major_every = int(len(self.__time_series) / 100)
         config.show_minor_x_labels = False
         config.x_label_rotation = 45
+        config._x_title = self.__args.x_title
 
         chart = pygal.Line(config)
         chart.x_labels = self.__x_axis
 
-        chart.add(self.__args.legend, self.__time_series)
+        if self.__args.stat_clean:
+            cleaned = []
+            q1 = self.percentile(25)
+            q3 = self.percentile(75)
+            iqr = q3-q1
+            for data_point in self.__time_series:
+                if q1 - 1.5 * iqr < data_point < q3 + 1.5 * iqr:
+                    cleaned.append(data_point)
+                else:
+                    cleaned.append(None)
+            chart.add(self.__args.legend, cleaned)
+        else:
+            chart.add(self.__args.legend, self.__time_series)
         chart.width = self.__args.width
         chart.height = self.__args.height
         chart.show_legend = False
@@ -58,7 +71,7 @@ class DataBlock:
         if self.__args.range > -1:
             chart.range = [self.__args.minRange, self.__args.range]
         else:
-            chart.range = [self.min(), self.percentile(.99) + self.percentile(.95)]
+            chart.range = [self.min(), self.percentile(99.9)]
         print("Rendering from " + self.__file_name)
 
         if self.__args.output != "":
@@ -121,12 +134,13 @@ class DataBlock:
             percentiles.append(numpy.percentile(self.__time_series, percentile))
         return percentiles
 
+    @functools.lru_cache(maxsize=128, typed=False)
     def percentile(self, percentile):
         return numpy.percentile(self.__time_series, percentile)
 
     @functools.lru_cache(maxsize=128, typed=False)
     def min(self):
-        return min(self.__time_series)
+        return 0
 
     @functools.lru_cache(maxsize=128, typed=False)
     def max(self):

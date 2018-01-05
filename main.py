@@ -40,7 +40,9 @@ delimit_parser = parser.add_argument("--delimiter", "-d", help="Delimiter charac
 column_parser = parser.add_argument("--column", "-c", help="Column to graph", type=str, default="MsBetweenPresents")
 multiplier_parser = parser.add_argument("--multiplier", "-x", help="Multiplier value (translate ns to ms)", type=int,
                                         default=1)
+x_title_parser = parser.add_argument("--x-title", "-xt", help="X Axis Title", type=str, default="Time elapsed (s)")
 legend_parser = parser.add_argument("--legend", "-l", help="Chart legend", type=str, default="")
+
 
 # statistical args
 median_enabled_parser = parser.add_argument("--stat-median", help="Median", type=bool, default=True)
@@ -51,6 +53,7 @@ count_below_enabled_parser = parser.add_argument("--stat-below", help="Count Bel
 p95_enabled_parser = parser.add_argument("--stat-p95", help="95%", type=bool, default=True)
 p99_enabled_parser = parser.add_argument("--stat-p99", help="99%", type=bool, default=True)
 p999_enabled_parser = parser.add_argument("--stat-p999", help="99.9%", type=bool, default=True)
+clean_iqr_parser = parser.add_argument("--stat-clean", help="Removes outliers (1.5x IQR)", type=bool, default=False)
 
 
 args = parser.parse_args()
