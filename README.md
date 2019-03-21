@@ -23,3 +23,4 @@ Intended features:
 |ANOVA|n|y|
 |Frame Distribution Graph|n|y|
 |Students T Test|n|y|
+|5% block analysis|y|y|
